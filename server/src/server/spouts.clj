@@ -6,6 +6,7 @@ More info on the Clojure DSL here:
 https://github.com/nathanmarz/storm/wiki/Clojure-DSL"
   (:require [clj-uuid :as uuid]
             [org.httpkit.client :as http]
+            [clojure.data.json :as json]
             [backtype.storm [clojure :refer [defspout spout emit-spout!]]]))
 
 (defspout type-spout ["type"]
@@ -13,17 +14,23 @@ https://github.com/nathanmarz/storm/wiki/Clojure-DSL"
   (let [stormys [:regular :bizarro]]
     (spout
      (nextTuple []
+                ;; Make HTTP request in order to get token needed to make further API requests
                 (http/get
                  (str "https://mobile.funda.io/api/v1/Token/" (uuid/v1))
-                 {:user-agent "Funda/74 CFNetwork/902.2 Darwin/17.7.0"
+                 {:user-agent "Funda/74 CFNetwork/902.2 Darwin/17.7.0" ;; Impersonate iPhone App
                   :headers {"Cookie" "X-Stored-Data=null"
-                                  ;; "User-Agent" "Funda/74 CFNetwork/902.2 Darwin/17.7.0"
                             "Accept-Language" "nl-NL"}}
                  (fn [{:keys [status headers body error]}] ;; asynchronous response handling
-                   (println body)
                    (if error
+                      ;; Failed
                      (println "Failed, exception is " error)
-                     (println "Async HTTP GET: " status))))
+                     ;; Success
+                     (do
+                       (println "Async HTTP GET: " status)
+                       ;; Parse Json response
+                       (let [jsonparsed (json/read-str body)
+                             {token "Token"} jsonparsed]
+                         (println token))))))
                 (emit-spout! collector [(rand-nth stormys)])
                 (Thread/sleep (* 1000 60 60 24)))
      (ack [id]

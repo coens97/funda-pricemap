@@ -3,6 +3,7 @@
   :url "https://github.com/coens97/funda-pricemap"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [http-kit "2.2.0"]
+                 [org.clojure/data.json "0.2.6"]
                  [danlentz/clj-uuid "0.1.7"]]
   :aot [server.TopologySubmitter]
   ;; include storm dependency only in dev because production storm cluster provides it
