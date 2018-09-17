@@ -14,8 +14,8 @@ https://github.com/nathanmarz/storm/wiki/Clojure-DSL"
   (topology
    {"spout" (spout-spec token-spout)}
 
-   {"houselist-bolt" (bolt-spec {"spout" ["token"]} houselist-bolt :p 1)}
-   {"house-bolt" (bolt-spec {"houselist-bolt" ["globalid"]} house-bolt :p 12)}))
+   {"houselist-bolt" (bolt-spec {"spout" ["token"]} houselist-bolt :p 1)
+    "house-bolt" (bolt-spec {"houselist-bolt" ["globalid"]} house-bolt :p 12)}))
 
 (defn run! [& {debug "debug" workers "workers" :or {debug "true" workers "2"}}]
   (doto (LocalCluster.)
