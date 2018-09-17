@@ -5,6 +5,8 @@ More info on the Clojure DSL here:
 
 https://github.com/nathanmarz/storm/wiki/Clojure-DSL"
   (:require [org.httpkit.client :as http]
+            [clojure.core]
+            [clojure.data.json :as json]
             [backtype.storm [clojure :refer [emit-bolt! defbolt ack! bolt]]]))
 
 (defbolt stormy-bolt ["stormy"] [{type :type :as tuple} collector]
@@ -19,7 +21,7 @@ https://github.com/nathanmarz/storm/wiki/Clojure-DSL"
   (emit-bolt! collector [(str "server produced: " stormy)] :anchor tuple)
   (ack! collector tuple))
 
-(defbolt houselist-bolt ["id"] [{token :token :as tuple} collector]
+(defbolt houselist-bolt ["globalid"] [{token :token :as tuple} collector]
   ;;(println token)
   (http/get
    (str "https://mobile.funda.io/api/v1/Aanbod/koop/heel-nederland%252Fbeschikbaar%252F?page=" 1 "&pageSize=25&compact=True")
@@ -33,5 +35,19 @@ https://github.com/nathanmarz/storm/wiki/Clojure-DSL"
             ;; Failed
        (println "Failed, exception is " error)
            ;; Success
-       (do (println body)))))
+       (let [jsonparsed (json/read-str body)
+             {total-count :x-total-count} headers]
+         (println total-count)
+         (->>
+          jsonparsed
+            ;; Only take GlobalId attribute
+          (map (fn [{globalid "GlobalId"}] (#(identity [%]) globalid)))
+            ;; Remove nils
+          (filter (fn [x] (not= x [nil])))
+            ;; Emit house id to other bolt
+          (mapv (fn [x] (emit-bolt! collector x :anchor tuple))))))))
+  (ack! collector tuple))
+
+(defbolt house-bolt ["something"] [{globalid :globalid :as tuple} collector]
+  (println (str "Got houseid:" globalid))
   (ack! collector tuple))
