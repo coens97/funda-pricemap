@@ -6,7 +6,7 @@ More info on the Clojure DSL here:
 https://github.com/nathanmarz/storm/wiki/Clojure-DSL"
   (:require [server
              [spouts :refer [token-spout]]
-             [bolts :refer [stormy-bolt server-bolt houselist-bolt house-bolt]]]
+             [bolts :refer [houselist-bolt house-bolt]]]
             [backtype.storm [clojure :refer [topology spout-spec bolt-spec]] [config :refer :all]])
   (:import [backtype.storm LocalCluster LocalDRPC]))
 

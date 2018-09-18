@@ -9,43 +9,45 @@ https://github.com/nathanmarz/storm/wiki/Clojure-DSL"
             [clojure.data.json :as json]
             [backtype.storm [clojure :refer [emit-bolt! defbolt ack! bolt]]]))
 
-(defbolt stormy-bolt ["stormy"] [{type :type :as tuple} collector]
-  (emit-bolt! collector [(case type
-                           :regular "I'm regular Stormy!"
-                           :bizarro "I'm bizarro Stormy!"
-                           "I have no idea what I'm doing.")]
-              :anchor tuple)
-  (ack! collector tuple))
-
-(defbolt server-bolt ["message"] [{stormy :stormy :as tuple} collector]
-  (emit-bolt! collector [(str "server produced: " stormy)] :anchor tuple)
-  (ack! collector tuple))
+(defn parse-int [s]
+  (Integer. (re-find  #"\d+" s)))
 
 (defbolt houselist-bolt ["globalid"] [{token :token :as tuple} collector]
-  ;;(println token)
-  (http/get
-   (str "https://mobile.funda.io/api/v1/Aanbod/koop/heel-nederland%252Fbeschikbaar%252F?page=" 1 "&pageSize=25&compact=True")
-   {:user-agent "Funda/74 CFNetwork/902.2 Darwin/17.7.0" ;; Impersonate iPhone App
-    :headers {"Accept" "*/*"
-              "Cookie" "X-Stored-Data=null"
-              "Accept-Language" "nl-NL"
-              "api_key" token}}
-   (fn [{:keys [status headers body error]}] ;; asynchronous response handling
-     (if error
+  (def pagesize 25)
+  (loop [page 1]
+    (let
+     [{:keys [status headers body error] :as resp}
+      @(http/get
+        (str
+         "https://mobile.funda.io/api/v1/Aanbod/koop/heel-nederland%252Fbeschikbaar%252F?page="
+         page
+         "&pageSize="
+         pagesize
+         "&compact=True")
+        {:user-agent "Funda/74 CFNetwork/902.2 Darwin/17.7.0" ;; Impersonate iPhone App
+         :headers {"Accept" "*/*"
+                   "Cookie" "X-Stored-Data=null"
+                   "Accept-Language" "nl-NL"
+                   "api_key" token}})]
+      (if error
             ;; Failed
-       (println "Failed, exception is " error)
+        (println "Failed, exception is " error)
            ;; Success
-       (let [jsonparsed (json/read-str body)
-             {total-count :x-total-count} headers]
-         (println total-count)
-         (->>
-          jsonparsed
+        (let [jsonparsed (json/read-str body)
+              {total-countstring :x-total-count} headers ;; Number of houses listed in string
+              total-count (parse-int total-countstring) ;; Number of houses to integer
+              currentposition (* page pagesize)] ;; Number of houses that is retrieved after this iteration
+          (println (str "Retrieving houselist: " currentposition "/" total-count))
+          (->>
+           jsonparsed
             ;; Only take GlobalId attribute
-          (map (fn [{globalid "GlobalId"}] (#(identity [%]) globalid)))
+           (map (fn [{globalid "GlobalId"}] (#(identity [%]) globalid)))
             ;; Remove nils
-          (filter (fn [x] (not= x [nil])))
+           (filter (fn [x] (not= x [nil])))
             ;; Emit house id to other bolt
-          (mapv (fn [x] (emit-bolt! collector x :anchor tuple))))))))
+           (mapv (fn [x] (emit-bolt! collector x :anchor tuple))))
+           ;; Continue the loop if more houses need to be retrieved
+          (if (> total-count currentposition) (recur (inc page)))))))
   (ack! collector tuple))
 
 (defbolt house-bolt ["something"] [{globalid :globalid :as tuple} collector]
