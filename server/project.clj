@@ -6,7 +6,6 @@
                  [org.clojure/data.json "0.2.6"]
                  [yieldbot/flambo "0.8.2"]
                  [danlentz/clj-uuid "0.1.7"]]
-  :aot [server.TopologySubmitter]
   :main server.core
   ;; include storm dependency only in dev because production storm cluster provides it
   :profiles {:dev

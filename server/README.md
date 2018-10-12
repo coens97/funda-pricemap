@@ -3,7 +3,7 @@
 To run on a local cluster:
 
 ```bash
-lein run -m server.topology/run!
+lein run
 # OR
 lein run -m server.topology/run! debug false workers 10
 ```

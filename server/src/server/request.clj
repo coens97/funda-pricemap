@@ -66,6 +66,7 @@
 (defn house-ids
   "Number of pages with housing listings"
   [token page]
+  (println (str "Loading page " page))
   (let
    [{:keys [status headers body error] :as resp}
     (house-list token page)]
@@ -76,7 +77,41 @@
         ;; Success
       (->>
        (json/read-str body)
+       ;; clojure.pprint/pprint
             ;; Only take GlobalId attribute
        (map (fn [{globalid "GlobalId"}] globalid))
             ;; Remove nils
-       (filter (fn [x] (some? nil)))))))
+       (filter (fn [x] (some? x)))))))
+
+(defn house-details
+  "Get details of house"
+  [token globalid]
+  (println (str "Loading house detail " globalid))
+  (let
+   [{:keys [status headers body error] :as resp}
+    @(http/get
+      (str "https://mobile.funda.io/api/v1/Aanbod/Detail/Koop/" globalid "/GekliktAppResultaatlijst")
+      {:user-agent "Funda/74 CFNetwork/902.2 Darwin/17.7.0" ;; Impersonate iPhone App
+       :headers {"Accept" "*/*"
+                 "accepted_cookie_policy" "12"
+                 "Cookie" "X-Stored-Data=null"
+                 "Accept-Language" "nl-NL"
+                 "api_key" token}})]
+    (if error
+        ;; Failed
+      (do (println "Failed, exception is " error)
+          [])
+        ;; Success
+      (let [json (json/read-str body)
+            {housedatalist "List"} (first json)
+            {overdrachtlist "List"} (->> housedatalist
+                                         (filter (fn [{title "Title"}] (= title "Overdracht")))
+                                         first)
+            {vraagprijs "Value"} (->> overdrachtlist
+                                      (filter (fn [{label "Label"}] (= label "Vraagprijs")))
+                                      first)
+            parsedvraagprijs (-> vraagprijs
+                                 (clojure.string/replace "." "")
+                                 parse-int)]
+        (println parsedvraagprijs)))))
+
