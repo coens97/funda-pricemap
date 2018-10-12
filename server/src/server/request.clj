@@ -86,6 +86,22 @@
 (defn house-details
   "Get details of house"
   [token globalid]
+  ;; Functions to traverse the JSON file
+  (defn housedata-detail
+    "Go deeper in housedata datastructure"
+    [detailtitle housedatalist]
+    (let [{returnlist "List"} (->> housedatalist
+                                   (filter (fn [{title "Title"}] (= title detailtitle)))
+                                   first)]
+      returnlist))
+  (defn get-label-value
+    "Go deeper in housedata datastructure"
+    [label list]
+    (let [{returnvalue "Value"} (->> list
+                                     (filter (fn [{l "Label"}] (= l label)))
+                                     first)]
+      returnvalue))
+
   (println (str "Loading house detail " globalid))
   (let
    [{:keys [status headers body error] :as resp}
@@ -104,14 +120,11 @@
         ;; Success
       (let [json (json/read-str body)
             {housedatalist "List"} (first json)
-            {overdrachtlist "List"} (->> housedatalist
-                                         (filter (fn [{title "Title"}] (= title "Overdracht")))
-                                         first)
-            {vraagprijs "Value"} (->> overdrachtlist
-                                      (filter (fn [{label "Label"}] (= label "Vraagprijs")))
-                                      first)
-            parsedvraagprijs (-> vraagprijs
+            overdrachtlist (housedata-detail "Overdracht" housedatalist)
+            parsedvraagprijs (-> (get-label-value "Vraagprijs" overdrachtlist)
                                  (clojure.string/replace "." "")
-                                 parse-int)]
+                                 parse-int)
+            status (get-label-value "Status" overdrachtlist)
+            bouwlist (housedata-detail "Bouw" housedatalist)]
         (println parsedvraagprijs)))))
 
