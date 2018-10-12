@@ -87,15 +87,15 @@
   "Get details of house"
   [token globalid]
   ;; Functions to traverse the JSON file
-  (defn housedata-detail
-    "Go deeper in housedata datastructure"
-    [detailtitle housedatalist]
-    (let [{returnlist "List"} (->> housedatalist
+  (defn get-list-by-title
+    ""
+    [detailtitle list]
+    (let [{returnlist "List"} (->> list
                                    (filter (fn [{title "Title"}] (= title detailtitle)))
                                    first)]
       returnlist))
-  (defn get-label-value
-    "Go deeper in housedata datastructure"
+  (defn get-value-by-label
+    ""
     [label list]
     (let [{returnvalue "Value"} (->> list
                                      (filter (fn [{l "Label"}] (= l label)))
@@ -120,11 +120,22 @@
         ;; Success
       (let [json (json/read-str body)
             {housedatalist "List"} (first json)
-            overdrachtlist (housedata-detail "Overdracht" housedatalist)
-            parsedvraagprijs (-> (get-label-value "Vraagprijs" overdrachtlist)
+            overdrachtlist (get-list-by-title "Overdracht" housedatalist)
+            parsedvraagprijs (-> (get-value-by-label "Vraagprijs" overdrachtlist)
                                  (clojure.string/replace "." "")
                                  parse-int)
-            status (get-label-value "Status" overdrachtlist)
-            bouwlist (housedata-detail "Bouw" housedatalist)]
+            status (get-value-by-label "Status" overdrachtlist)
+            bouwlist (get-list-by-title "Bouw" housedatalist)
+            bouwjaar (get-value-by-label "Bouwjaar" bouwlist)
+            typehuis (get-value-by-label "Soort woonhuis" bouwlist)
+            bouwvorm (get-value-by-label "Bouwvorm" bouwlist)
+            opervlaklist (get-list-by-title "Oppervlakten en inhoud" bouwlist)
+            gebruikoppervlaklist (get-list-by-title "Gebruiksoppervlakten" opervlaklist)
+            woonoppervlakte (get-value-by-label "Wonen (= woonoppervlakte)" gebruikoppervlaklist)
+            perceeloppervlakte (get-value-by-label "Perceeloppervlakte" opervlaklist)
+            indelinglist (get-list-by-title "Indeling" housedatalist)
+            [_ aantalkamers aantalslaapkamers] (re-matches #"(\d+) kamers \((\d+).*" (get-value-by-label "Aantal kamers" indelinglist))
+            kadastralegegevenslist (get-list-by-title "Kadastrale gegevens" housedatalist)
+            {postcode "Title"} (first kadastralegegevenslist)]
         (println parsedvraagprijs)))))
 
