@@ -5,6 +5,7 @@
                  [http-kit "2.2.0"]
                  [org.clojure/data.json "0.2.6"]
                  [yieldbot/flambo "0.8.2"]
+                 [clj-time "0.15.0"]
                  [danlentz/clj-uuid "0.1.7"]]
   :main server.core
   ;; include storm dependency only in dev because production storm cluster provides it
