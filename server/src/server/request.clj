@@ -117,7 +117,7 @@
     (if error
         ;; Failed
       (do (println "Failed, exception is " error)
-          [])
+          nil)
         ;; Success
       (let [json (json/read-str body)
             {housedatalist "List"} (first json)
