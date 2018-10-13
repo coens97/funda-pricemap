@@ -67,7 +67,7 @@
 (defn house-ids
   "Number of pages with housing listings"
   [token page]
-  (println (str "Loading page " page))
+  ;(println (str "Loading page " page))
   (let
    [{:keys [status headers body error] :as resp}
     (house-list token page)]
@@ -103,7 +103,7 @@
                                      first)]
       returnvalue))
 
-  (println (str "Loading house detail " globalid))
+  ;(println (str "Loading house detail " globalid))
   (let
    [{:keys [status headers body error] :as resp}
     @(http/get

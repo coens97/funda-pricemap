@@ -1,6 +1,7 @@
 (ns server.core
   (:require [flambo.conf :as conf]
             [flambo.api :as f]
+            [clojure.data.json :as json]
             [server
              [request :refer [get-token nr-of-pages house-ids house-details]]]))
 
@@ -19,7 +20,10 @@
           ;; Go through the list of houses available
         (f/flat-map (f/iterator-fn [page] (house-ids token page)))
         (f/map (f/fn [x] (house-details token x)))
+        (f/group-by (f/fn [{postcode :postcode}] postcode))
+        ;(f/map f/group-untuple)
         f/collect
+        ;json/write-str
         clojure.pprint/pprint))
 
   (Thread/sleep (* 1000 60 60 24)))

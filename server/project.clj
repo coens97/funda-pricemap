@@ -9,5 +9,5 @@
   :main server.core
   ;; include storm dependency only in dev because production storm cluster provides it
   :profiles {:dev
-             {:aot [flambo.function]
+             {:aot [flambo.function flambo.api server.core]
               :dependencies [[org.apache.spark/spark-core_2.11 "2.2.0"]]}})
