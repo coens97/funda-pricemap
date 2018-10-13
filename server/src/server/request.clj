@@ -6,7 +6,8 @@
 
 (def pagesize 25)
 (defn parse-int [s]
-  (Integer. (re-find  #"\d+" s)))
+  (try (Integer. (re-find  #"\d+" s))
+       (catch Exception e nil)))
 
 (defn get-token
   "Make request to Funda to get API token to be used with further requesrts"
@@ -129,13 +130,24 @@
             bouwjaar (get-value-by-label "Bouwjaar" bouwlist)
             typehuis (get-value-by-label "Soort woonhuis" bouwlist)
             bouwvorm (get-value-by-label "Bouwvorm" bouwlist)
-            opervlaklist (get-list-by-title "Oppervlakten en inhoud" bouwlist)
+            opervlaklist (get-list-by-title "Oppervlakten en inhoud" housedatalist)
             gebruikoppervlaklist (get-list-by-title "Gebruiksoppervlakten" opervlaklist)
-            woonoppervlakte (get-value-by-label "Wonen (= woonoppervlakte)" gebruikoppervlaklist)
-            perceeloppervlakte (get-value-by-label "Perceeloppervlakte" opervlaklist)
+            woonoppervlakte (parse-int (get-value-by-label "Wonen (= woonoppervlakte)" gebruikoppervlaklist))
+            perceeloppervlakte (parse-int (get-value-by-label "Perceeloppervlakte" opervlaklist))
             indelinglist (get-list-by-title "Indeling" housedatalist)
             [_ aantalkamers aantalslaapkamers] (re-matches #"(\d+) kamers \((\d+).*" (get-value-by-label "Aantal kamers" indelinglist))
+            aantalkamersparsed (parse-int aantalkamers)
+            aantalslaapkamersparsed (parse-int aantalslaapkamers)
             kadastralegegevenslist (get-list-by-title "Kadastrale gegevens" housedatalist)
-            {postcode "Title"} (first kadastralegegevenslist)]
-        (println parsedvraagprijs)))))
+            {postcode "Title"} (first kadastralegegevenslist)
+            postcodeparsed (parse-int postcode)]
+        ;; (println status)(println parsedvraagprijs)(println bouwjaar)(println typehuis)(println bouwvorm)(println woonoppervlakte)(println perceeloppervlakte)(println aantalkamers)(println aantalslaapkamers)(println postcodeparsed)
+        (if (and (some? postcodeparsed) (= status "Beschikbaar") (= bouwvorm "Bestaande bouw"))
+          {:vraagprijs parsedvraagprijs
+           :typehuis typehuis
+           :woonoppervlakte woonoppervlakte
+           :perceeloppervlakte perceeloppervlakte
+           :aantalkamers aantalkamersparsed
+           :aantalslaapkamers aantalslaapkamersparsed
+           :postcode postcodeparsed})))))
 

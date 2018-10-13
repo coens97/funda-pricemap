@@ -8,7 +8,7 @@
   "Entry point"
   []
   (def c (-> (conf/spark-conf)
-             (conf/master "local[1]") ;; local[*]
+             (conf/master "local[16]") ;; local[*]
              (conf/app-name "funda-crawler")))
 
   (def sc (f/spark-context c))
