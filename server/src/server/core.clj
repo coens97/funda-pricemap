@@ -5,6 +5,7 @@
             [clj-time.local :as l]
             [flambo.api :as f]
             [flambo.tuple :as ft]
+            [perseverance.core :as p]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
             [server
@@ -59,10 +60,15 @@
   "Entry point"
   []
   (def c (-> (conf/spark-conf)
-             (conf/master "local[*]")
+             (conf/master "local[1]")
              (conf/app-name "funda-crawler")))
 
   (def sc (f/spark-context c))
-  (run-batch sc)
+
+  (p/retry
+   {:strategy (p/progressive-retry-strategy :initial-delay 200, :max-delay 10000)}
+   (p/retriable
+    {}
+    (run-batch sc)))
 
   (Thread/sleep (* 1000 60 60 24)))
