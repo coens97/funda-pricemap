@@ -8,31 +8,34 @@
             [perseverance.core :as p]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
+            [clj-jgit.porcelain :as g]
             [server
              [request :refer [get-token nr-of-pages house-ids house-details]]]))
 
+(def overview-file "../docs/generated/overview.json")
 (defn register-file
   ""
   [date]
-  (let [readjson (->
-                  (slurp "docs/generated/overview.json")
-                  json/read-str)
+  (let [readjson (-> overview-file
+                     (slurp)
+                     json/read-str)
         {dates "dates"} readjson
         updatejson (->
                     readjson
                     (assoc "dates" (conj dates date))
                     json/write-str)]
-    (spit "docs/generated/overview.json" updatejson)))
+    (spit overview-file updatejson)))
 
 (defn run-batch
   "Process the data from funda through Spark"
   [sc]
   (let [date (l/format-local-time (l/local-now) :date)
-        filename (str "docs/generated/" date ".json")]
+        filename (str "../docs/generated/" date ".json")
+        repo (load-repo "../")]
     (if (not (.exists (io/as-file filename)))
       (let [token (get-token)
             result (->
-                    (f/parallelize sc (range 1 (nr-of-pages token)))
+                    (f/parallelize sc (range 1 3));;(nr-of-pages token)))
                     ;; Go through the list of houses available
                     (f/flat-map (f/iterator-fn [page] (house-ids token page)))
                     ;; Retrieve each house
@@ -53,7 +56,15 @@
                      json/write-str)]
           ;; Write to file
         (spit filename jsontxt)
-        (register-file date))
+          ;; Add to list of generated files
+        (register-file date)
+          ;; Add file to git version system
+        (git-add repo filename)
+        (git-add repo overview-file)
+        (git-commit my-repo (str "Generated " date) {"Coen Stange" "coenstange@me.com"})
+          ;; Push changes
+        (with-identity {:name "~/.ssh/id_rsa" :exclusive true}
+          (git-push my-repo :tags true)))
       (println "Already processed today"))))
 
 (defn -main

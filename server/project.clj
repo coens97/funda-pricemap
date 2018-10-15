@@ -6,6 +6,7 @@
                  [org.clojure/data.json "0.2.6"]
                  [yieldbot/flambo "0.8.2"]
                  [clj-time "0.15.0"]
+                 [clj-jgit "0.8.10"]
                  [com.grammarly/perseverance "0.1.3"]
                  [danlentz/clj-uuid "0.1.7"]]
   :main server.core
