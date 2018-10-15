@@ -116,65 +116,70 @@
       returnvalue))
 
   ;(println (str "Loading house detail " globalid))
-  (p/retry
-   {:strategy (p/progressive-retry-strategy :initial-delay 200, :max-delay 10000)}
-   (p/retriable
-    {}
-    (let
-     [{:keys [status headers body error] :as resp}
-      @(http/get
-        (str "https://mobile.funda.io/api/v1/Aanbod/Detail/Koop/" globalid "/GekliktAppResultaatlijst")
-        {:user-agent "Funda/74 CFNetwork/902.2 Darwin/17.7.0" ;; Impersonate iPhone App
-         :headers {"Accept" "*/*"
-                   "accepted_cookie_policy" "12"
-                   "Cookie" "X-Stored-Data=null"
-                   "Accept-Language" "nl-NL"
-                   "api_key" token}})]
-      (if error
+  (try
+    (p/retry
+     {:strategy (p/progressive-retry-strategy :initial-delay 100, :max-delay 10000)}
+     (p/retriable
+      {}
+      (let
+       [{:keys [status headers body error] :as resp}
+        @(http/get
+          (str "https://mobile.funda.io/api/v1/Aanbod/Detail/Koop/" globalid "/GekliktAppResultaatlijst")
+          {:user-agent "Funda/74 CFNetwork/902.2 Darwin/17.7.0" ;; Impersonate iPhone App
+           :headers {"Accept" "*/*"
+                     "accepted_cookie_policy" "12"
+                     "Cookie" "X-Stored-Data=null"
+                     "Accept-Language" "nl-NL"
+                     "api_key" token}})]
+        (if error
         ;; Failed
-        (do (println "Failed, exception is " error)
-            nil)
+          (do (println "Failed, exception is " error)
+              nil)
         ;; Success
-        (let [json (json/read-str body)
-              {housedatalist "List"} (first json)
-              overdrachtlist (get-list-by-title "Overdracht" housedatalist)
-              [_ vraagprijs] (try (re-matches #"..([0-9.]+)00 k.k.*" (get-value-by-label "Vraagprijs" overdrachtlist))
-                                  (catch Exception e [nil nil nil]))
-              parsedvraagprijs (try (->
-                                     vraagprijs
-                                     (clojure.string/replace "." "")
-                                     parse-int)
-                                    (catch Exception e nil))
-              status (get-value-by-label "Status" overdrachtlist)
-              bouwlist (get-list-by-title "Bouw" housedatalist)
-              bouwjaar (get-value-by-label "Bouwjaar" bouwlist)
-              typehuis (get-value-by-label "Soort woonhuis" bouwlist)
-              bouwvorm (get-value-by-label "Bouwvorm" bouwlist)
-              opervlaklist (get-list-by-title "Oppervlakten en inhoud" housedatalist)
-              gebruikoppervlaklist (get-list-by-title "Gebruiksoppervlakten" opervlaklist)
-              woonoppervlakte (parse-int (get-value-by-label "Wonen (= woonoppervlakte)" gebruikoppervlaklist))
-              perceeloppervlakte (parse-int (get-value-by-label "Perceeloppervlakte" opervlaklist))
-              indelinglist (get-list-by-title "Indeling" housedatalist)
-              [_ aantalkamers aantalslaapkamers] (try (re-matches #"(\d+) kamers \((\d+).*" (get-value-by-label "Aantal kamers" indelinglist))
-                                                      (catch Exception e [nil nil nil]))
-              aantalkamersparsed (parse-int aantalkamers)
-              aantalslaapkamersparsed (parse-int aantalslaapkamers)
-              kadastralegegevenslist (get-list-by-title "Kadastrale gegevens" housedatalist)
-              {postcode "Title"} (first kadastralegegevenslist)
-              postcodeparsed (parse-int postcode)]
+          (try
+            (let [json (json/read-str body)
+                  {housedatalist "List"} (first json)
+                  overdrachtlist (get-list-by-title "Overdracht" housedatalist)
+                  parsedvraagprijs (try (-> (get-value-by-label "Vraagprijs" overdrachtlist)
+                                            (clojure.string/replace "." "")
+                                            parse-int)
+                                        (catch Exception e nil))
+                  status (get-value-by-label "Status" overdrachtlist)
+                  bouwlist (get-list-by-title "Bouw" housedatalist)
+                  bouwjaar (get-value-by-label "Bouwjaar" bouwlist)
+                  typehuis (get-value-by-label "Soort woonhuis" bouwlist)
+                  bouwvorm (get-value-by-label "Bouwvorm" bouwlist)
+                  opervlaklist (get-list-by-title "Oppervlakten en inhoud" housedatalist)
+                  gebruikoppervlaklist (get-list-by-title "Gebruiksoppervlakten" opervlaklist)
+                  woonoppervlakte (parse-int (get-value-by-label "Wonen (= woonoppervlakte)" gebruikoppervlaklist))
+                  perceeloppervlakte (parse-int (get-value-by-label "Perceeloppervlakte" opervlaklist))
+                  indelinglist (get-list-by-title "Indeling" housedatalist)
+                  [_ aantalkamers aantalslaapkamers] (try (re-matches #"(\d+) kamers \((\d+).*" (get-value-by-label "Aantal kamers" indelinglist))
+                                                          (catch Exception e [nil nil nil]))
+                  aantalkamersparsed (parse-int aantalkamers)
+                  aantalslaapkamersparsed (parse-int aantalslaapkamers)
+                  kadastralegegevenslist (get-list-by-title "Kadastrale gegevens" housedatalist)
+                  {postcode "Title"} (first kadastralegegevenslist)
+                  postcodeparsed (parse-int postcode)]
         ;; (println status)(println parsedvraagprijs)(println bouwjaar)(println typehuis)(println bouwvorm)(println woonoppervlakte)(println perceeloppervlakte)(println aantalkamers)(println aantalslaapkamers)(println postcodeparsed)
-          (if (and
-               (some? parsedvraagprijs)
-               (some? postcodeparsed)
-               (some? aantalkamers)
-               (some? aantalslaapkamers)
-               (= status "Beschikbaar")
-               (= bouwvorm "Bestaande bouw"))
-            {:vraagprijs parsedvraagprijs
-             :typehuis typehuis
-             :woonoppervlakte woonoppervlakte
-             :perceeloppervlakte perceeloppervlakte
-             :aantalkamers aantalkamersparsed
-             :aantalslaapkamers aantalslaapkamersparsed
-             :postcode postcodeparsed})))))))
+              (if (and
+                   (some? parsedvraagprijs)
+                   (some? postcodeparsed)
+                   (some? aantalkamers)
+                   (some? aantalslaapkamers)
+                   (= status "Beschikbaar")
+                   (= bouwvorm "Bestaande bouw"))
+                {:vraagprijs parsedvraagprijs
+                 :typehuis typehuis
+                 :woonoppervlakte woonoppervlakte
+                 :perceeloppervlakte perceeloppervlakte
+                 :aantalkamers aantalkamersparsed
+                 :aantalslaapkamers aantalslaapkamersparsed
+                 :postcode postcodeparsed}))
+            (catch Exception e
+              (do (println (str "Could not parse " globalid))
+                  nil)))))))
+    (catch Exception e
+      (do (println (str "Could not CONNECT " globalid))
+          nil))))
 
