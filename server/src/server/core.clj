@@ -9,6 +9,7 @@
             [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clj-jgit.porcelain :as g]
+            [clojure.java.shell :as shell]
             [server
              [request :refer [get-token nr-of-pages house-ids house-details]]]))
 
@@ -26,12 +27,18 @@
                     json/write-str)]
     (spit overview-file updatejson)))
 
+;; Wrapper to run git command in terminal
+(defn git-cmd
+  [& args]
+  (let [r (apply shell/sh "git" args)]
+    (when (zero? (:exit r))
+      (clojure.string/trim-newline (:out r)))))
+
 (defn run-batch
   "Process the data from funda through Spark"
   [sc]
   (let [date (l/format-local-time (l/local-now) :date)
-        filename (str "../docs/generated/" date ".json")
-        repo (load-repo "../")]
+        filename (str "../docs/generated/" date ".json")]
     (if (not (.exists (io/as-file filename)))
       (let [token (get-token)
             result (->
@@ -59,12 +66,9 @@
           ;; Add to list of generated files
         (register-file date)
           ;; Add file to git version system
-        (git-add repo filename)
-        (git-add repo overview-file)
-        (git-commit my-repo (str "Generated " date) {"Coen Stange" "coenstange@me.com"})
-          ;; Push changes
-        (with-identity {:name "~/.ssh/id_rsa" :exclusive true}
-          (git-push my-repo :tags true)))
+        (git-cmd "add" ".")
+        (git-cmd "commit" "-am" (str "Generated " date))
+        (git-cmd "push"))
       (println "Already processed today"))))
 
 (defn -main
