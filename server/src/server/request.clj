@@ -5,7 +5,7 @@
             [perseverance.core :as p]
             [clojure.data.json :as json]))
 
-(def pagesize 25)
+(def page-size 25)
 (defn parse-int [s]
   (try (Integer. (re-find  #"\d+" s))
        (catch Exception e nil)))
@@ -46,7 +46,7 @@
      "https://mobile.funda.io/api/v1/Aanbod/koop/heel-nederland%252Fbeschikbaar%252F?page="
      page
      "&pageSize="
-     pagesize
+     page-size
      "&compact=True")
     {:user-agent "Funda/74 CFNetwork/902.2 Darwin/17.7.0" ;; Impersonate iPhone App
      :headers {"Accept" "*/*"
@@ -71,7 +71,7 @@
            ;; Success
         (let [{total-countstring :x-total-count} headers ;; Number of houses listed in string
               total-count (parse-int total-countstring)] ;; Number of houses to integer
-          (quot total-count pagesize)))))))
+          (quot total-count page-size)))))))
 
 (defn house-ids
   "Number of pages with housing listings"
@@ -94,7 +94,7 @@
             ;; Only take GlobalId attribute
          (map (fn [{globalid "GlobalId"}] globalid))
             ;; Remove nils
-         (filter (fn [x] (some? x)))))))))
+         (filter some?)))))))
 
 (defn house-details
   "Get details of house"
