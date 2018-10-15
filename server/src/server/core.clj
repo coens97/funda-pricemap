@@ -81,6 +81,7 @@
 
   (def sc (f/spark-context c))
 
+  (timely/start-scheduler)
   (timely/scheduled-item
    (timely/daily)
    (try
