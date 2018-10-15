@@ -9,6 +9,7 @@
             [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clj-jgit.porcelain :as g]
+            [timely.core :as timely]
             [clojure.java.shell :as shell]
             [server
              [request :refer [get-token nr-of-pages house-ids house-details]]]))
@@ -42,7 +43,7 @@
     (if-not (.exists (io/as-file filename))
       (let [token (get-token)
             result (->
-                    (f/parallelize sc (range 1 3)) ;;(nr-of-pages token)))
+                    (f/parallelize sc (range 1 (nr-of-pages token)))
                     ;; Go through the list of houses available
                     (f/flat-map (f/iterator-fn [page] (house-ids token page)))
                     ;; Retrieve each house
@@ -80,10 +81,15 @@
 
   (def sc (f/spark-context c))
 
-  (p/retry
-   {:strategy (p/progressive-retry-strategy :initial-delay 200, :max-delay 10000)}
-   (p/retriable
-    {}
-    (run-batch sc)))
-
-  (Thread/sleep (* 1000 60 60 24)))
+  (timely/scheduled-item
+   (timely/daily)
+   (try
+     (p/retry
+      {:strategy (p/progressive-retry-strategy :initial-delay 200, :max-delay 10000)}
+      (p/retriable
+       {}
+       (run-batch sc)))
+     (catch Exception e
+       (do
+         (println "Batch failed")
+         (println e))))))
