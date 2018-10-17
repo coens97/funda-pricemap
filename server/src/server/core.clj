@@ -9,7 +9,6 @@
             [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clj-jgit.porcelain :as g]
-            [timely.core :as timely]
             [clojure.java.shell :as shell]
             [server
              [request :refer [get-token nr-of-pages house-ids house-details]]]))
@@ -81,16 +80,13 @@
 
   (def sc (f/spark-context c))
 
-  (timely/start-scheduler)
-  (timely/scheduled-item
-   (timely/daily)
-   (try
-     (p/retry
-      {:strategy (p/progressive-retry-strategy :initial-delay 200, :max-delay 10000)}
-      (p/retriable
-       {}
-       (run-batch sc)))
-     (catch Exception e
-       (do
-         (println "Batch failed")
-         (println e))))))
+  (try
+    (p/retry
+     {:strategy (p/progressive-retry-strategy :initial-delay 200, :max-delay 10000)}
+     (p/retriable
+      {}
+      (run-batch sc)))
+    (catch Exception e
+      (do
+        (println "Batch failed")
+        (println e)))))
