@@ -4,13 +4,15 @@
   "private": true,
   "dependencies": {
     "express": "^4.16.4",
+    "leaflet": "^1.3.4",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
+    "react-leaflet": "^2.1.0",
     "react-scripts": "2.0.5"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && find ../docs -type f -name '*.js' -o -name '*.css' -delete && rm -rf ../docs/static && mv build/* ../docs",
+    "build": "react-scripts build && find ../docs -type f -name '*.js' -o -name '*.css' -delete && rm -rf ../docs/static && rm -rf ../docs/images && mv build/* ../docs",
     "devserver": "node devserver.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
