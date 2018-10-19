@@ -66,7 +66,7 @@
           ;; Add to list of generated files
         (register-file date)
           ;; Add file to git version system
-        (git-cmd "add" ".")
+        (git-cmd "add" filename)
         (git-cmd "commit" "-am" (str "Generated " date))
         (git-cmd "push"))
       (println "Already processed today"))))
