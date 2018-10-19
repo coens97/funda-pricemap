@@ -1,14 +1,13 @@
 {
-  "main.css": "/static/css/main.8b9a0c1e.chunk.css",
-  "main.js": "/static/js/main.15c06248.chunk.js",
-  "main.js.map": "/static/js/main.15c06248.chunk.js.map",
-  "static/js/1.6105a37c.chunk.js": "/static/js/1.6105a37c.chunk.js",
-  "static/js/1.6105a37c.chunk.js.map": "/static/js/1.6105a37c.chunk.js.map",
-  "runtime~main.js": "/static/js/runtime~main.229c360f.js",
-  "runtime~main.js.map": "/static/js/runtime~main.229c360f.js.map",
-  "static/media/logo.svg": "/static/media/logo.5d5d9eef.svg",
-  "static/css/main.8b9a0c1e.chunk.css.map": "/static/css/main.8b9a0c1e.chunk.css.map",
-  "index.html": "/index.html",
-  "precache-manifest.4bf31ac967d32efea05478b9217908c9.js": "/precache-manifest.4bf31ac967d32efea05478b9217908c9.js",
-  "service-worker.js": "/service-worker.js"
+  "main.css": "/funda-pricemap/static/css/main.8dbbb9f6.chunk.css",
+  "main.js": "/funda-pricemap/static/js/main.ba9b500a.chunk.js",
+  "main.js.map": "/funda-pricemap/static/js/main.ba9b500a.chunk.js.map",
+  "static/js/1.7eae6140.chunk.js": "/funda-pricemap/static/js/1.7eae6140.chunk.js",
+  "static/js/1.7eae6140.chunk.js.map": "/funda-pricemap/static/js/1.7eae6140.chunk.js.map",
+  "runtime~main.js": "/funda-pricemap/static/js/runtime~main.68b00ddc.js",
+  "runtime~main.js.map": "/funda-pricemap/static/js/runtime~main.68b00ddc.js.map",
+  "static/css/main.8dbbb9f6.chunk.css.map": "/funda-pricemap/static/css/main.8dbbb9f6.chunk.css.map",
+  "index.html": "/funda-pricemap/index.html",
+  "precache-manifest.8e976ca5d79dadaff49061ef108b4697.js": "/funda-pricemap/precache-manifest.8e976ca5d79dadaff49061ef108b4697.js",
+  "service-worker.js": "/funda-pricemap/service-worker.js"
 }
