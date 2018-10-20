@@ -1,0 +1,29 @@
+{
+  "name": "react-lpzpki",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "16.5.2",
+    "deck.gl": "6.2.0",
+    "luma.gl": "6.2.0",
+    "react-dom": "16.5.2",
+    "d3-request": "1.0.6",
+    "react-map-gl": "3.3.7"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build && find ../docs -type f -name '*.js' -delete && find ../docs -type f -name '*.css' -delete && rm -rf ../docs/static && rm -rf ../docs/images && mv build/* ../docs",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "react-scripts": "latest"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "homepage": "https://coens97.github.io/funda-pricemap/"
+}

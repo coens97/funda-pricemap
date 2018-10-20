@@ -1,13 +1,11 @@
 {
-  "main.css": "/funda-pricemap/static/css/main.f2b1a347.chunk.css",
-  "main.js": "/funda-pricemap/static/js/main.979450e7.chunk.js",
-  "main.js.map": "/funda-pricemap/static/js/main.979450e7.chunk.js.map",
-  "static/js/1.88bed229.chunk.js": "/funda-pricemap/static/js/1.88bed229.chunk.js",
-  "static/js/1.88bed229.chunk.js.map": "/funda-pricemap/static/js/1.88bed229.chunk.js.map",
+  "main.js": "/funda-pricemap/static/js/main.c409874f.chunk.js",
+  "main.js.map": "/funda-pricemap/static/js/main.c409874f.chunk.js.map",
+  "static/js/1.0f0a819b.chunk.js": "/funda-pricemap/static/js/1.0f0a819b.chunk.js",
+  "static/js/1.0f0a819b.chunk.js.map": "/funda-pricemap/static/js/1.0f0a819b.chunk.js.map",
   "runtime~main.js": "/funda-pricemap/static/js/runtime~main.68b00ddc.js",
   "runtime~main.js.map": "/funda-pricemap/static/js/runtime~main.68b00ddc.js.map",
-  "static/css/main.f2b1a347.chunk.css.map": "/funda-pricemap/static/css/main.f2b1a347.chunk.css.map",
   "index.html": "/funda-pricemap/index.html",
-  "precache-manifest.252f076bb38b76ac2be219116cb83613.js": "/funda-pricemap/precache-manifest.252f076bb38b76ac2be219116cb83613.js",
+  "precache-manifest.b9a7e2717b5b6f0b39480b9a0d3c738c.js": "/funda-pricemap/precache-manifest.b9a7e2717b5b6f0b39480b9a0d3c738c.js",
   "service-worker.js": "/funda-pricemap/service-worker.js"
 }
