@@ -18,7 +18,7 @@ export default class DeckGLOverlay extends Component {
       longitude: 4.9636486,
       zoom: 8,
       maxZoom: 16,
-      pitch: 45,
+      pitch: 20,
       bearing: 0
     };
   }
@@ -33,7 +33,7 @@ export default class DeckGLOverlay extends Component {
     const layer = new GeoJsonLayer({
       id: 'geojson',
       data,
-      opacity: 0.8,
+      opacity: 0.3,
       stroked: false,
       filled: true,
       extruded: true,
