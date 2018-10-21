@@ -41,17 +41,13 @@ export default class DeckGLOverlay extends Component {
       fp64: true,
       getElevation: f => {
         const postcode = f.properties.POSTCODE;
-        if (postcode in statistics) {
-          const listHouses = statistics[postcode];
-          if (listHouses.length == 0) {
-            return 5;
-          }
-          const averageHouseprice = listHouses.reduce((p, c) => p.vraagprijs + c.vraagprijs, 0) / listHouses.length;
-          const averageSize = listHouses.reduce((p, c) => p.woonoppervlakte + c.woonoppervlakte, 0) / listHouses.length;
-          return averageHouseprice / (100 * averageSize);
+        if (postcode in statistics.postcodes) {
+          const data = statistics.postcodes[postcode];
+          const val = ((data.r - statistics.minprice) / (statistics.maxprice - statistics.minprice)) * 100000;
+          return val;
         }
         else {
-          return 10;
+          return 2;
         }
       },
       getFillColor: f => [255, 0, 255],//const colorScale = r => [r * 255, 140, 200 * (1 - r)];

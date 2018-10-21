@@ -4,8 +4,8 @@ self.__precacheManifest = [
     "url": "/funda-pricemap/static/js/runtime~main.68b00ddc.js"
   },
   {
-    "revision": "61d59f9b6ae0fa7830f9",
-    "url": "/funda-pricemap/static/js/main.61d59f9b.chunk.js"
+    "revision": "15b92e5df31c3c4cb5bc",
+    "url": "/funda-pricemap/static/js/main.15b92e5d.chunk.js"
   },
   {
     "revision": "518d051f037a09669504",
@@ -16,7 +16,7 @@ self.__precacheManifest = [
     "url": "/funda-pricemap/static/css/1.f543ea28.chunk.css"
   },
   {
-    "revision": "fc131c83774d80cff683b6ab8dba47a2",
+    "revision": "e86961b7eb053d30b8e047b7df52c77e",
     "url": "/funda-pricemap/index.html"
   }
 ];

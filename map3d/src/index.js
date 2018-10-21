@@ -27,7 +27,7 @@ class Root extends Component {
       statistics: null
     };
 
-    Promise.all([fetch(DATA_URL), fetch('generated/2018-10-15.json')])
+    Promise.all([fetch(DATA_URL), fetch('generated/2018-10-21.json')])
       .then(response =>
         Promise.all(response.map(x => x.json()))
       )
