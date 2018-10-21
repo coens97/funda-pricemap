@@ -9,8 +9,8 @@
                  [clj-jgit "0.8.10"]
                  [com.grammarly/perseverance "0.1.3"]
                  [danlentz/clj-uuid "0.1.7"]]
-  :main server.core
+  :main server.coreApp
   ;; include storm dependency only in dev because production storm cluster provides it
   :profiles {:dev
-             {:aot [flambo.function flambo.api server.core]
+             {:aot [flambo.function flambo.api server.coreApp]
               :dependencies [[org.apache.spark/spark-core_2.11 "2.2.0"]]}})
