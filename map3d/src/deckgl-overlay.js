@@ -40,11 +40,15 @@ export default class DeckGLOverlay extends Component {
       wireframe: true,
       fp64: true,
       getElevation: f => {
+        const viewMax = 10000;
+        const priceMax = 10000;
         const postcode = f.properties.POSTCODE;
         if (postcode in statistics.postcodes) {
           const data = statistics.postcodes[postcode];
-          const val = ((data.r - statistics.minprice) / (statistics.maxprice - statistics.minprice)) * 100000;
-          return val;
+          if (data.r > priceMax) {
+            return viewMax;
+          }
+          return ((data.r - statistics.minprice) / (priceMax - statistics.minprice)) * viewMax;
         }
         else {
           return 2;
