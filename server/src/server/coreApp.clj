@@ -85,15 +85,16 @@
                       (f/fold
                        Integer/MAX_VALUE
                        (f/fn [acc row]
-                         (do
-                           (println acc)
-                           (println row)))))
+                         (if (number? row) ;; Reduce can work in parallel, row can be a number
+                           (min row acc)
+                           (min (:r (._2 row)) acc)))))
             jsontxt (->>
                      objresult
                       ;; Combine hashmaps
                      (apply merge)
                       ;; To JSON
                      json/write-str)]
+        (println minprice)
           ;; Write to file
         (spit filename jsontxt)
           ;; Add to list of generated files
