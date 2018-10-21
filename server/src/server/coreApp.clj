@@ -75,11 +75,13 @@
                            {:p avgprice ;; 1 letter attribute in order to reduce filesize
                             :s avgsqm
                             :r pricepersqm}))))))
-            objresult (->
-                       result
-                       (f/map (ft/key-val-fn (f/fn [k v] {k v})))
+            objresult (apply
+                       merge
+                       (->
+                        result
+                        (f/map (ft/key-val-fn (f/fn [k v] {k v})))
                         ;; Collect result from spark
-                       f/collect)
+                        f/collect))
             minprice (->
                       result
                       (f/fold
@@ -96,14 +98,10 @@
                          (if (number? row) ;; Reduce can work in parallel, row can be a number
                            (max row acc)
                            (max (:r (._2 row)) acc)))))
-            jsontxt (->>
-                     objresult
-                      ;; Combine hashmaps
-                     (apply merge)
-                      ;; To JSON
-                     json/write-str)]
-        (println minprice)
-        (println maxprice)
+            jsontxt (json/write-str
+                     {:postcodes objresult
+                      :minprice minprice
+                      :maxprice maxprice})]
           ;; Write to file
         (spit filename jsontxt)
           ;; Add to list of generated files
