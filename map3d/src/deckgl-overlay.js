@@ -16,7 +16,7 @@ export default class DeckGLOverlay extends Component {
     return {
       latitude: 52.2125708,
       longitude: 4.9636486,
-      zoom: 8,
+      zoom: 7,
       maxZoom: 16,
       pitch: 20,
       bearing: 0
@@ -24,7 +24,7 @@ export default class DeckGLOverlay extends Component {
   }
 
   render() {
-    const { viewport, data, colorScale } = this.props;
+    const { viewport, data, statistics } = this.props;
 
     if (!data) {
       return null;
@@ -39,8 +39,22 @@ export default class DeckGLOverlay extends Component {
       extruded: true,
       wireframe: true,
       fp64: true,
-      getElevation: f => Math.floor(Math.random() * 20) * 20,//Math.sqrt(f.properties.valuePerSqm) * 10,
-      getFillColor: f => [255, 0, 255],//colorScale(f.properties.growth),
+      getElevation: f => {
+        const postcode = f.properties.POSTCODE;
+        if (postcode in statistics) {
+          const listHouses = statistics[postcode];
+          if (listHouses.length == 0) {
+            return 5;
+          }
+          const averageHouseprice = listHouses.reduce((p, c) => p.vraagprijs + c.vraagprijs, 0) / listHouses.length;
+          const averageSize = listHouses.reduce((p, c) => p.woonoppervlakte + c.woonoppervlakte, 0) / listHouses.length;
+          return averageHouseprice / (100 * averageSize);
+        }
+        else {
+          return 10;
+        }
+      },
+      getFillColor: f => [255, 0, 255],//const colorScale = r => [r * 255, 140, 200 * (1 - r)];
       getLineColor: f => [255, 255, 255],
       lightSettings: LIGHT_SETTINGS,
       pickable: Boolean(this.props.onHover),

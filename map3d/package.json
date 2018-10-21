@@ -3,12 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
-    "react": "16.5.2",
+    "d3-request": "1.0.6",
     "deck.gl": "6.2.0",
     "luma.gl": "6.2.0",
+    "react": "16.5.2",
     "react-dom": "16.5.2",
-    "d3-request": "1.0.6",
-    "react-map-gl": "3.3.7"
+    "react-map-gl": "3.3.7",
+    "react-toastify": "^4.4.0"
   },
   "scripts": {
     "start": "react-scripts start",
