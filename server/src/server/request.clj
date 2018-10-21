@@ -166,6 +166,7 @@
                    (some? parsedvraagprijs)
                    (some? postcodeparsed)
                    (some? aantalkamers)
+                   (some? woonoppervlakte)
                    (some? aantalslaapkamers)
                    (= status "Beschikbaar")
                    (= bouwvorm "Bestaande bouw"))
