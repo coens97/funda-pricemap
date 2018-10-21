@@ -30,6 +30,23 @@ export default class DeckGLOverlay extends Component {
       return null;
     }
 
+    const calcDepth = (f, defaultValue, scale) => {
+      const priceMax = 10000;
+      const postcode = f.properties.POSTCODE;
+      if (postcode in statistics.postcodes) {
+        const data = statistics.postcodes[postcode];
+        if (data.r > priceMax) {
+          return scale;
+        }
+        return ((data.r - statistics.minprice) / (priceMax - statistics.minprice)) * scale;
+      }
+      else {
+        return defaultValue;
+      }
+    };
+
+    const colorScale = r => [r * 255, 140, 200 * (1 - r)];
+
     const layer = new GeoJsonLayer({
       id: 'geojson',
       data,
@@ -39,22 +56,8 @@ export default class DeckGLOverlay extends Component {
       extruded: true,
       wireframe: true,
       fp64: true,
-      getElevation: f => {
-        const viewMax = 10000;
-        const priceMax = 10000;
-        const postcode = f.properties.POSTCODE;
-        if (postcode in statistics.postcodes) {
-          const data = statistics.postcodes[postcode];
-          if (data.r > priceMax) {
-            return viewMax;
-          }
-          return ((data.r - statistics.minprice) / (priceMax - statistics.minprice)) * viewMax;
-        }
-        else {
-          return 2;
-        }
-      },
-      getFillColor: f => [255, 0, 255],//const colorScale = r => [r * 255, 140, 200 * (1 - r)];
+      getElevation: f => calcDepth(f, 2, 10000),
+      getFillColor: f => colorScale(calcDepth(f, 0, 1)),
       getLineColor: f => [255, 255, 255],
       lightSettings: LIGHT_SETTINGS,
       pickable: Boolean(this.props.onHover),
