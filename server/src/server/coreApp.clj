@@ -88,6 +88,14 @@
                          (if (number? row) ;; Reduce can work in parallel, row can be a number
                            (min row acc)
                            (min (:r (._2 row)) acc)))))
+            maxprice (->
+                      result
+                      (f/fold
+                       Integer/MIN_VALUE
+                       (f/fn [acc row]
+                         (if (number? row) ;; Reduce can work in parallel, row can be a number
+                           (max row acc)
+                           (max (:r (._2 row)) acc)))))
             jsontxt (->>
                      objresult
                       ;; Combine hashmaps
@@ -95,6 +103,7 @@
                       ;; To JSON
                      json/write-str)]
         (println minprice)
+        (println maxprice)
           ;; Write to file
         (spit filename jsontxt)
           ;; Add to list of generated files
