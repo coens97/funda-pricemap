@@ -57,11 +57,13 @@
                       (f/fn [k v]
                         (let [countlist (count v)
                               {vraagprijs :vraagprijs} (first v)
+                              ;; Aggregate average price
                               avgprice (reduce
                                         (fn [c {vraagprijs :vraagprijs}]
                                           c +  (/ vraagprijs countlist))
                                         0
                                         v)
+                              ;; Aggregate average squaremeter
                               avgsqm (reduce
                                       (fn [c {woonoppervlakte :woonoppervlakte}]
                                         c +  (/ woonoppervlakte countlist))
@@ -76,8 +78,16 @@
             objresult (->
                        result
                        (f/map (ft/key-val-fn (f/fn [k v] {k v})))
-                    ;; Collect result from spark
+                        ;; Collect result from spark
                        f/collect)
+            minprice (->
+                      result
+                      (f/fold
+                       Integer/MAX_VALUE
+                       (f/fn [acc row]
+                         (do
+                           (println acc)
+                           (println row)))))
             jsontxt (->>
                      objresult
                       ;; Combine hashmaps
