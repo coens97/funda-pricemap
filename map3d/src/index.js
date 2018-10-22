@@ -27,7 +27,7 @@ class Root extends Component {
       statistics: null
     };
 
-    Promise.all([fetch(DATA_URL), fetch('generated/2018-10-21.json')])
+    Promise.all([fetch(DATA_URL), fetch('generated/2018-10-22.json')])
       .then(response =>
         Promise.all(response.map(x => x.json()))
       )
@@ -73,7 +73,7 @@ class Root extends Component {
           onViewportChange={this._onViewportChange.bind(this)}
           mapboxApiAccessToken={MAPBOX_TOKEN}>
           <DeckGLOverlay viewport={viewport}
-            data={data}
+            postmap={data}
             statistics={statistics} />
         </MapGL>
       </div>

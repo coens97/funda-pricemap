@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.2/workbox-sw.js");
 
 importScripts(
-  "/funda-pricemap/precache-manifest.5106da26ab83665912ae00cd36a7a24a.js"
+  "/funda-pricemap/precache-manifest.61c196039d05f2c1c017e4404cb154fb.js"
 );
 
 workbox.clientsClaim();

@@ -24,19 +24,34 @@ export default class DeckGLOverlay extends Component {
   }
 
   render() {
-    const { viewport, data, statistics } = this.props;
+    const { viewport, postmap, statistics } = this.props;
 
-    if (!data) {
+    if (!postmap) {
       return null;
     }
 
+    const filteredPostmap = {
+      ...postmap,
+      features: postmap.features.filter(f => {
+        const postcode = f.properties.POSTCODE;
+        if (postcode in statistics.postcodes) {
+          const data = statistics.postcodes[postcode];
+          return data.c >= 3;
+        }
+        return false;
+      })
+    }
+
     const calcDepth = (f, defaultValue, scale) => {
-      const priceMax = 10000;
+      const priceMax = 3500;
       const postcode = f.properties.POSTCODE;
       if (postcode in statistics.postcodes) {
         const data = statistics.postcodes[postcode];
         if (data.r > priceMax) {
           return scale;
+        }
+        if (data.c < 3) {
+          return defaultValue;
         }
         return ((data.r - statistics.minprice) / (priceMax - statistics.minprice)) * scale;
       }
@@ -49,14 +64,14 @@ export default class DeckGLOverlay extends Component {
 
     const layer = new GeoJsonLayer({
       id: 'geojson',
-      data,
+      data: filteredPostmap,
       opacity: 0.3,
       stroked: false,
       filled: true,
       extruded: true,
       wireframe: true,
       fp64: true,
-      getElevation: f => calcDepth(f, 0, 10000),
+      getElevation: f => calcDepth(f, 0, 5000),
       getFillColor: f => colorScale(calcDepth(f, 0, 1)),
       getLineColor: f => [255, 255, 255],
       lightSettings: LIGHT_SETTINGS,
