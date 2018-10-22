@@ -42,7 +42,7 @@
     (if-not (.exists (io/as-file filename))
       (let [token (get-token)
             result (->
-                    (f/parallelize sc (range 1 (nr-of-pages token)))
+                    (f/parallelize sc (range 1 3)) ;(nr-of-pages token)))
                     ;; Go through the list of houses available
                     (f/flat-map (f/iterator-fn [page] (house-ids token page)))
                     ;; Retrieve each house
@@ -55,26 +55,29 @@
                     (f/map
                      (ft/key-val-fn
                       (f/fn [k v]
-                        (let [countlist (count v)
-                              {vraagprijs :vraagprijs} (first v)
-                              ;; Aggregate average price
-                              avgprice (reduce
-                                        (fn [c {vraagprijs :vraagprijs}]
-                                          c +  (/ vraagprijs countlist))
-                                        0
-                                        v)
-                              ;; Aggregate average squaremeter
-                              avgsqm (reduce
-                                      (fn [c {woonoppervlakte :woonoppervlakte}]
-                                        c +  (/ woonoppervlakte countlist))
-                                      0
-                                      v)
-                              pricepersqm (/ avgprice avgsqm)]
+                        (let [pricepersqm (reduce
+                                           (fn
+                                             [{sqm :s
+                                               count :c
+                                               result :r}
+                                              {woonoppervlakte :woonoppervlakte
+                                               vraagprijs :vraagprijs}]
+                                             (if (> woonoppervlakte 12)
+                                               (let [newSqm (+ sqm (/ vraagprijs woonoppervlakte))
+                                                     newCount (inc count)]
+                                                 {:s newSqm
+                                                  :c newCount
+                                                  :r (/ newSqm newCount)})
+                                               {:s sqm
+                                                :c count
+                                                :r result}))
+                                           {:s 0
+                                            :c 0
+                                            :r 0}
+                                           v)]
                           (ft/tuple
                            k
-                           {:p avgprice ;; 1 letter attribute in order to reduce filesize
-                            :s avgsqm
-                            :r pricepersqm}))))))
+                           pricepersqm))))))
             objresult (apply
                        merge
                        (->
@@ -89,7 +92,9 @@
                        (f/fn [acc row]
                          (if (number? row) ;; Reduce can work in parallel, row can be a number
                            (min row acc)
-                           (min (:r (._2 row)) acc)))))
+                           (if (> (:c (._2 row)) 0) ;; If result is empty
+                             (min (:r (._2 row)) acc)
+                             acc)))))
             maxprice (->
                       result
                       (f/fold
@@ -97,7 +102,9 @@
                        (f/fn [acc row]
                          (if (number? row) ;; Reduce can work in parallel, row can be a number
                            (max row acc)
-                           (max (:r (._2 row)) acc)))))
+                           (if (> (:c (._2 row)) 0) ;; If result is empty
+                             (max (:r (._2 row)) acc)
+                             acc)))))
             jsontxt (json/write-str
                      {:postcodes objresult
                       :minprice minprice
