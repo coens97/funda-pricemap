@@ -56,7 +56,7 @@ export default class DeckGLOverlay extends Component {
       extruded: true,
       wireframe: true,
       fp64: true,
-      getElevation: f => calcDepth(f, 2, 10000),
+      getElevation: f => calcDepth(f, 0, 10000),
       getFillColor: f => colorScale(calcDepth(f, 0, 1)),
       getLineColor: f => [255, 255, 255],
       lightSettings: LIGHT_SETTINGS,
