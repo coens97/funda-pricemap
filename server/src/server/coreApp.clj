@@ -42,7 +42,7 @@
     (if-not (.exists (io/as-file filename))
       (let [token (get-token)
             result (->
-                    (f/parallelize sc (range 1 3)) ;(nr-of-pages token)))
+                    (f/parallelize sc (range 1 3(nr-of-pages token)))
                     ;; Go through the list of houses available
                     (f/flat-map (f/iterator-fn [page] (house-ids token page)))
                     ;; Retrieve each house
