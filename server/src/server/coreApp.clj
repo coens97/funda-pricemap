@@ -112,6 +112,7 @@
 
 (defn results-to-file
   [inResult filename]
+  (println "Write to file " filename)
   (spit
    (str filename ".json")
    (fill-json inResult))
