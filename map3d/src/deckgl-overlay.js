@@ -34,25 +34,16 @@ export default class DeckGLOverlay extends Component {
       ...postmap,
       features: postmap.features.filter(f => {
         const postcode = f.properties.POSTCODE;
-        if (postcode in statistics.postcodes) {
-          const data = statistics.postcodes[postcode];
-          return data.c >= 3;
-        }
-        return false;
+        return postcode in statistics.postcodes
       })
     }
 
     const calcDepth = (f, defaultValue, scale) => {
-      const priceMax = 3500;
+      const priceMax = 3750;
       const postcode = f.properties.POSTCODE;
       if (postcode in statistics.postcodes) {
         const data = statistics.postcodes[postcode];
-        if (data.r > priceMax) {
-          return scale;
-        }
-        if (data.c < 3) {
-          return defaultValue;
-        }
+
         return ((data.r - statistics.minprice) / (priceMax - statistics.minprice)) * scale;
       }
       else {
