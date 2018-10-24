@@ -141,7 +141,8 @@
          result
          filename)
           ;; Filter on number of files
-        (for [aantalSlaapkamers (range 1 5)]
+        (map 
+        (fn [aantalSlaapkamers]
           (do (println (str "Aantal slaapkamers " aantalSlaapkamers "process"))
               (results-to-file
                (f/filter
@@ -150,6 +151,7 @@
                  (f/fn [_ v] (= (:aantalslaapkamers v) aantalSlaapkamers))))
                (str filename ".slaap." aantalSlaapkamers))
                ))
+               (range 1 5))
           ;; Add to list of generated files
         (register-file date)
           ;; Add file to git version system
