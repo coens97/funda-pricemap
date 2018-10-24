@@ -125,7 +125,7 @@
   [sc]
   (let [date (l/format-local-time (l/local-now) :date)
         filename (str "../docs/generated/" date)]
-    (if-not (.exists (io/as-file filename))
+    (if-not (.exists (io/as-file (str filename ".json")))
       (let [token (get-token)
             result (->
                     (f/parallelize sc (range 1 3)) ;(nr-of-pages token)))
@@ -139,7 +139,7 @@
         (println "Process all results")
         (results-to-file
          result
-         date)
+         filename)
           ;; Filter on number of files
         (for [aantalSlaapkamers (range 1 5)]
           (do (println (str "Aantal slaapkamers " aantalSlaapkamers "process"))
@@ -148,7 +148,7 @@
              ;   result
              ;   (ft/key-val-fn
              ;    (f/fn [_ v] (= (:aantalslaapkamers v) aantalSlaapkamers))))
-             ;  (str date ".slaap." aantalSlaapkamers))
+             ;  (str filename ".slaap." aantalSlaapkamers))
                ))
           ;; Add to list of generated files
         (register-file date)
