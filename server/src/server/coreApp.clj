@@ -105,10 +105,10 @@
                        (if (> (:c (._2 row)) 0) ;; If result is empty
                          (max (:r (._2 row)) acc)
                          acc)))))]
-    json/write-str
+    (json/write-str
     {:postcodes objresult
      :minprice minprice
-     :maxprice maxprice}))
+     :maxprice maxprice})))
 
 (defn results-to-file
   [inResult filename]
