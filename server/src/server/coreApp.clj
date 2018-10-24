@@ -112,11 +112,13 @@
 
 (defn results-to-file
   [inResult filename]
-  (println "Write to file " filename)
-  (spit
-   (str filename ".json")
-   (fill-json inResult))
-  (git-cmd "add" (str filename ".json")))
+  (let [json (fill-json inResult)]
+    (println "Write to file " filename)
+    (println json)
+    (spit
+     (str filename ".json")
+     json)
+    (git-cmd "add" (str filename ".json"))))
 
 (defn run-batch
   "Process the data from funda through Spark"
@@ -141,12 +143,12 @@
           ;; Filter on number of files
         (for [aantalSlaapkamers (range 1 5)]
           (do (println (str "Aantal slaapkamers " aantalSlaapkamers "process"))
-          (results-to-file
-           (f/filter
-            result
-            (ft/key-val-fn
-             (f/fn [_ v] (= (:aantalslaapkamers v) aantalSlaapkamers))))
-           (str date ".slaap." aantalSlaapkamers))))
+              (results-to-file
+               (f/filter
+                result
+                (ft/key-val-fn
+                 (f/fn [_ v] (= (:aantalslaapkamers v) aantalSlaapkamers))))
+               (str date ".slaap." aantalSlaapkamers))))
           ;; Add to list of generated files
         (register-file date)
           ;; Add file to git version system
