@@ -14,7 +14,7 @@
              [request :refer [get-token nr-of-pages house-ids house-details]]]))
 
 (def overview-file "../docs/generated/overview.json")
-(def min-houses-per-postalcode 4)
+(def min-houses-per-postalcode 2)
 
 (defn register-file
   ""
@@ -36,91 +36,117 @@
     (when (zero? (:exit r))
       (clojure.string/trim-newline (:out r)))))
 
+
+(defn calculate-average-pricepersqm
+  [inResult]
+  (->
+   inResult
+   (f/group-by (f/fn [{postcode :postcode}] postcode))
+     ;; Change from spark tuple to clojure hashmap and average
+   (f/map
+    (ft/key-val-fn
+     (f/fn [k v]
+       (let [pricepersqm
+             (reduce
+              (fn
+                [{sqm :s
+                  count :c
+                  result :r}
+                 {woonoppervlakte :woonoppervlakte
+                  vraagprijs :vraagprijs}]
+                (if (> woonoppervlakte 12)
+                  (let [newSqm (+ sqm (/ vraagprijs woonoppervlakte))
+                        newCount (inc count)]
+                    {:s newSqm
+                     :c newCount
+                     :r (/ newSqm newCount)})
+                  {:s sqm
+                   :c count
+                   :r result}))
+              {:s 0
+               :c 0
+               :r 0}
+              v)]
+         (ft/tuple
+          k
+          pricepersqm)))))
+          ;; Remove results with to little results
+   (f/filter
+    (ft/key-val-fn
+     (f/fn [_ v] (> (:c v) min-houses-per-postalcode))))))
+
+(defn fill-json
+  [inResult]
+  (let [result (calculate-average-pricepersqm inResult)
+        objresult (apply
+                   merge
+                   (->
+                    result
+                    (f/map (ft/key-val-fn (f/fn [k v] {k v})))
+                        ;; Collect result from spark
+                    f/collect))
+        minprice (->
+                  result
+                  (f/fold
+                   Integer/MAX_VALUE
+                   (f/fn [acc row]
+                     (if (number? row) ;; Reduce can work in parallel, row can be a number
+                       (min row acc)
+                       (if (> (:c (._2 row)) 0) ;; If result is empty
+                         (min (:r (._2 row)) acc)
+                         acc)))))
+        maxprice (->
+                  result
+                  (f/fold
+                   Integer/MIN_VALUE
+                   (f/fn [acc row]
+                     (if (number? row) ;; Reduce can work in parallel, row can be a number
+                       (max row acc)
+                       (if (> (:c (._2 row)) 0) ;; If result is empty
+                         (max (:r (._2 row)) acc)
+                         acc)))))]
+    json/write-str
+    {:postcodes objresult
+     :minprice minprice
+     :maxprice maxprice}))
+
+(defn results-to-file
+  [inResult filename]
+  (spit
+   (str filename ".json")
+   (fill-json inResult))
+   (git-cmd "add" (str filename ".json")))
+
 (defn run-batch
   "Process the data from funda through Spark"
   [sc]
   (let [date (l/format-local-time (l/local-now) :date)
-        filename (str "../docs/generated/" date ".json")]
+        filename (str "../docs/generated/" date)]
     (if-not (.exists (io/as-file filename))
       (let [token (get-token)
             result (->
-                    (f/parallelize sc (range 1 (nr-of-pages token)))
+                    (f/parallelize sc (range 1 3)) ;(nr-of-pages token)))
                     ;; Go through the list of houses available
                     (f/flat-map (f/iterator-fn [page] (house-ids token page)))
                     ;; Retrieve each house
                     (f/map (f/fn [x] (house-details token x)))
                     ;; Remove houses that are not included
-                    (f/filter (f/fn [x] (some? x)))
-                    ;; Group by postal code
-                    (f/group-by (f/fn [{postcode :postcode}] postcode))
-                    ;; Change from spark tuple to clojure hashmap and average
-                    (f/map
-                     (ft/key-val-fn
-                      (f/fn [k v]
-                        (let [pricepersqm (reduce
-                                           (fn
-                                             [{sqm :s
-                                               count :c
-                                               result :r}
-                                              {woonoppervlakte :woonoppervlakte
-                                               vraagprijs :vraagprijs}]
-                                             (if (> woonoppervlakte 12)
-                                               (let [newSqm (+ sqm (/ vraagprijs woonoppervlakte))
-                                                     newCount (inc count)]
-                                                 {:s newSqm
-                                                  :c newCount
-                                                  :r (/ newSqm newCount)})
-                                               {:s sqm
-                                                :c count
-                                                :r result}))
-                                           {:s 0
-                                            :c 0
-                                            :r 0}
-                                           v)]
-                          (ft/tuple
-                           k
-                           pricepersqm)))))
-                    ;; Remove results with to little results
-                    (f/filter
-                     (ft/key-val-fn
-                      (f/fn [_ v] (> (:c v) min-houses-per-postalcode)))))
-            objresult (apply
-                       merge
-                       (->
-                        result
-                        (f/map (ft/key-val-fn (f/fn [k v] {k v})))
-                        ;; Collect result from spark
-                        f/collect))
-            minprice (->
-                      result
-                      (f/fold
-                       Integer/MAX_VALUE
-                       (f/fn [acc row]
-                         (if (number? row) ;; Reduce can work in parallel, row can be a number
-                           (min row acc)
-                           (if (> (:c (._2 row)) 0) ;; If result is empty
-                             (min (:r (._2 row)) acc)
-                             acc)))))
-            maxprice (->
-                      result
-                      (f/fold
-                       Integer/MIN_VALUE
-                       (f/fn [acc row]
-                         (if (number? row) ;; Reduce can work in parallel, row can be a number
-                           (max row acc)
-                           (if (> (:c (._2 row)) 0) ;; If result is empty
-                             (max (:r (._2 row)) acc)
-                             acc)))))
-            jsontxt (json/write-str
-                     {:postcodes objresult
-                      :minprice minprice
-                      :maxprice maxprice})]
-          ;; Write to file
-        (spit filename jsontxt)
+                    (f/filter (f/fn [x] (some? x))))]
+          ;; Write all results to file
+        (results-to-file
+         result
+         date)
+          ;; Filter on number of files
+        (for [aantalSlaapkamers (range 1 5)]
+          (results-to-file
+           (f/filter
+            result
+            (ft/key-val-fn
+             (f/fn [_ v] (= (:aantalslaapkamers v) aantalSlaapkamers))))
+           (str date ".slaap." aantalSlaapkamers)))
           ;; Add to list of generated files
         (register-file date)
           ;; Add file to git version system
-        (git-cmd "add" filename)
         (git-cmd "commit" "-am" (str "Generated " date))
         (git-cmd "push"))
       (println "Already processed today"))))
