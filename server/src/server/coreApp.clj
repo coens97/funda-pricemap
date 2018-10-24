@@ -116,7 +116,7 @@
   (spit
    (str filename ".json")
    (fill-json inResult))
-   (git-cmd "add" (str filename ".json")))
+  (git-cmd "add" (str filename ".json")))
 
 (defn run-batch
   "Process the data from funda through Spark"
@@ -134,17 +134,19 @@
                     ;; Remove houses that are not included
                     (f/filter (f/fn [x] (some? x))))]
           ;; Write all results to file
+        (println "Process all results")
         (results-to-file
          result
          date)
           ;; Filter on number of files
         (for [aantalSlaapkamers (range 1 5)]
+          (do (println (str "Aantal slaapkamers " aantalSlaapkamers "process"))
           (results-to-file
            (f/filter
             result
             (ft/key-val-fn
              (f/fn [_ v] (= (:aantalslaapkamers v) aantalSlaapkamers))))
-           (str date ".slaap." aantalSlaapkamers)))
+           (str date ".slaap." aantalSlaapkamers))))
           ;; Add to list of generated files
         (register-file date)
           ;; Add file to git version system
