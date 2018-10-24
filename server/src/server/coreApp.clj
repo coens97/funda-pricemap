@@ -14,6 +14,8 @@
              [request :refer [get-token nr-of-pages house-ids house-details]]]))
 
 (def overview-file "../docs/generated/overview.json")
+(def min-houses-per-postalcode 4)
+
 (defn register-file
   ""
   [date]
@@ -42,7 +44,7 @@
     (if-not (.exists (io/as-file filename))
       (let [token (get-token)
             result (->
-                    (f/parallelize sc (range 1 (nr-of-pages token)))
+                    (f/parallelize sc (range 1 3)) ;(nr-of-pages token)))
                     ;; Go through the list of houses available
                     (f/flat-map (f/iterator-fn [page] (house-ids token page)))
                     ;; Retrieve each house
@@ -77,7 +79,11 @@
                                            v)]
                           (ft/tuple
                            k
-                           pricepersqm))))))
+                           pricepersqm)))))
+                    ;; Remove results with to little results
+                    (f/filter
+                     (ft/key-val-fn
+                      (f/fn [_ v] (> (:c v) min-houses-per-postalcode)))))
             objresult (apply
                        merge
                        (->
