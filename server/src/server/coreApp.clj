@@ -134,15 +134,16 @@
                     ;; Retrieve each house
                     (f/map (f/fn [x] (house-details token x)))
                     ;; Remove houses that are not included
-                    (f/filter (f/fn [x] (some? x))))]
+                    (f/filter (f/fn [x] (some? x)))
+                    ;; Keep the intermediate results
+                    f/cache)]
           ;; Write all results to file
         (println "Process all results")
         (results-to-file
          result
          filename)
           ;; Filter on number of files
-        (map 
-        (fn [aantalSlaapkamers]
+        (doseq [aantalSlaapkamers (range 1 5)]
           (do (println (str "Aantal slaapkamers " aantalSlaapkamers "process"))
               (results-to-file
                (f/filter
@@ -151,7 +152,6 @@
                  (f/fn [_ v] (= (:aantalslaapkamers v) aantalSlaapkamers))))
                (str filename ".slaap." aantalSlaapkamers))
                ))
-               (range 1 5))
           ;; Add to list of generated files
         (register-file date)
           ;; Add file to git version system
