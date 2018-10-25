@@ -11,10 +11,10 @@
  * See https://goo.gl/2aRDsh
  */
 
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.2/workbox-sw.js");
+importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/funda-pricemap/precache-manifest.172cef26891c6054ed310117c0fae42d.js"
+  "/funda-pricemap/precache-manifest.479c04db8d5cda97a4087ac549549472.js"
 );
 
 workbox.clientsClaim();

@@ -9,6 +9,7 @@
     "react": "16.5.2",
     "react-dom": "16.5.2",
     "react-map-gl": "3.3.7",
+    "react-spinners": "^0.4.7",
     "react-toastify": "^4.4.0"
   },
   "scripts": {

@@ -6,6 +6,7 @@ import DeckGLOverlay from './deckgl-overlay.js';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { BounceLoader } from 'react-spinners';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiY29lbnM5NyIsImEiOiJjam5objg4YWQwNWVlM3B0ZHd0NGV2aDdpIn0.0Jg6jNjAROAafiP9QB_i6w'; // eslint-disable-line
@@ -24,7 +25,8 @@ class Root extends Component {
         height: 500,
       },
       data: null,
-      statistics: null
+      statistics: null,
+      loading: true
     };
 
     Promise.all([fetch(DATA_URL), fetch('generated/2018-10-25.slaap.4.json')])
@@ -35,7 +37,8 @@ class Root extends Component {
         this.setState(
           {
             data: jsonData[0],
-            statistics: jsonData[1]
+            statistics: jsonData[1],
+            loading: false
           });
       }).catch(ex => {
         console.warn(ex);
@@ -64,10 +67,25 @@ class Root extends Component {
 
   render() {
     const { viewport, data, statistics } = this.state;
-
+    // Css style of loader
     return (
       <div>
         <ToastContainer />
+        { // Render loading screen if applicable
+          this.state.loading &&
+          <div className="loaderBox">
+            <div className="loaderContainer">
+              <BounceLoader
+                sizeUnit={"px"}
+                size={150}
+                margin={"0 auto"}
+                color={'#43c92c'}
+                loading={true}
+              />
+            </div>
+            <h3>Loading rescources...</h3>
+          </div>
+        }
         <MapGL
           {...viewport}
           mapStyle='mapbox://styles/mapbox/streets-v10'
