@@ -106,15 +106,14 @@
                          (max (:r (._2 row)) acc)
                          acc)))))]
     (json/write-str
-    {:postcodes objresult
-     :minprice minprice
-     :maxprice maxprice})))
+     {:postcodes objresult
+      :minprice minprice
+      :maxprice maxprice})))
 
 (defn results-to-file
   [inResult filename]
   (let [json (fill-json inResult)]
     (println "Write to file " filename)
-    (println json)
     (spit
      (str filename ".json")
      json)
@@ -128,7 +127,7 @@
     (if-not (.exists (io/as-file (str filename ".json")))
       (let [token (get-token)
             result (->
-                    (f/parallelize sc (range 1 3)) ;(nr-of-pages token)))
+                    (f/parallelize sc (range 1 (nr-of-pages token)))
                     ;; Go through the list of houses available
                     (f/flat-map (f/iterator-fn [page] (house-ids token page)))
                     ;; Retrieve each house
@@ -136,27 +135,28 @@
                     ;; Remove houses that are not included
                     (f/filter (f/fn [x] (some? x)))
                     ;; Keep the intermediate results
-                    f/cache)]
+                    (f/cache))]
           ;; Write all results to file
         (println "Process all results")
+        (println result)
         (results-to-file
          result
          filename)
-          ;; Filter on number of files
-        (doseq [aantalSlaapkamers (range 1 5)]
-          (do (println (str "Aantal slaapkamers " aantalSlaapkamers "process"))
+
+        (println "Process slaapkamers")
+        (println result)
+        (doseq [aantalSlaapkamers (range 1 7)]
               (results-to-file
                (f/filter
                 result
-                (ft/key-val-fn
-                 (f/fn [_ v] (= (:aantalslaapkamers v) aantalSlaapkamers))))
-               (str filename ".slaap." aantalSlaapkamers))
-               ))
+                (f/fn [house] (= (:aantalslaapkamers house) aantalSlaapkamers)))
+              (str filename ".slaap." aantalSlaapkamers)))
           ;; Add to list of generated files
         (register-file date)
           ;; Add file to git version system
         (git-cmd "commit" "-am" (str "Generated " date))
-        (git-cmd "push"))
+        (git-cmd "push")
+)
       (println "Already processed today"))))
 
 (defn -main
