@@ -7,12 +7,19 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { BounceLoader } from 'react-spinners';
+import { slide as Menu } from 'react-burger-menu'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fab } from '@fortawesome/free-brands-svg-icons'
+import { library } from '@fortawesome/fontawesome-svg-core'
+
+library.add(fab);
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiY29lbnM5NyIsImEiOiJjam5objg4YWQwNWVlM3B0ZHd0NGV2aDdpIn0.0Jg6jNjAROAafiP9QB_i6w'; // eslint-disable-line
 
 // Source data GeoJSON
 const DATA_URL = 'map/postcodemap.wsg.json'; // eslint-disable-line
+const OVERVIEW_URL = 'generated/overview.json'
 
 class Root extends Component {
 
@@ -26,10 +33,12 @@ class Root extends Component {
       },
       data: null,
       statistics: null,
-      loading: true
+      overview: null,
+      loading: true,
+      overviewLoaded: false,
     };
 
-    Promise.all([fetch(DATA_URL), fetch('generated/2018-10-25.slaap.4.json')])
+    Promise.all([fetch(DATA_URL), fetch('generated/2018-10-25.slaap.4.json'), fetch(OVERVIEW_URL)])
       .then(response =>
         Promise.all(response.map(x => x.json()))
       )
@@ -38,7 +47,9 @@ class Root extends Component {
           {
             data: jsonData[0],
             statistics: jsonData[1],
-            loading: false
+            overview: jsonData[2],
+            loading: false,
+            overviewLoaded: true
           });
       }).catch(ex => {
         console.warn(ex);
@@ -85,6 +96,22 @@ class Root extends Component {
             </div>
             <h3>Loading rescources...</h3>
           </div>
+        }
+        {
+          // Render menu-bar if overview is loaded
+          this.state.overviewLoaded &&
+          <Menu>
+
+
+            <div className="sociallinks">
+              <a className="icon-link" target="_blank" href="https://github.com/coens97/funda-pricemap">
+                <FontAwesomeIcon icon={['fab', 'github']} size="3x" />
+              </a>
+              <a className="icon-link" target="_blank" href="https://www.linkedin.com/in/coen-stange/">
+                <FontAwesomeIcon className="font-icon" icon={['fab', 'linkedin']} size="3x" />
+              </a>
+            </div>
+          </Menu>
         }
         <MapGL
           {...viewport}
