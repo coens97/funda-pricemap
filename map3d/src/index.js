@@ -37,7 +37,8 @@ class Root extends Component {
       overview: null,
       loading: true,
       overviewLoaded: false,
-      selectedDate: null
+      selectedDate: null,
+      selectedOtherStatistics: { value: "", label: "All" }
     };
 
     Promise.all([fetch(DATA_URL), fetch(OVERVIEW_URL)])
@@ -107,11 +108,29 @@ class Root extends Component {
         selectedDate: newDate
       });
 
-    this.loadStatisticsFile(newDate.value);
+    this.loadStatisticsFile(newDate.value + this.state.selectedOtherStatistics.value);
+  };
+
+  _onOtherChanged = (newStatistics) => {
+    this.setState(
+      {
+        selectedOtherStatistics: newStatistics
+      });
+
+    this.loadStatisticsFile(this.state.selectedDate.value + newStatistics.value);
   };
 
   render() {
     const { viewport, data, statistics } = this.state;
+    const extraStatistics = [
+      { value: "", label: "All" },
+      { value: ".slaap.1", label: "1 bedroom" },
+      { value: ".slaap.2", label: "2 bedrooms" },
+      { value: ".slaap.3", label: "3 bedrooms" },
+      { value: ".slaap.4", label: "4 bedrooms" },
+      { value: ".slaap.5", label: "5 bedrooms" },
+      { value: ".slaap.6", label: "6 bedrooms" }
+    ];
     // Css style of loader
     return (
       <div>
@@ -143,6 +162,13 @@ class Root extends Component {
               value={this.state.selectedDate}
               onChange={this._onDateChanged}
               options={this.state.overview}
+            />
+            <h3 className="select-header">Other statistics</h3>
+            <Select
+              className="menu-select"
+              value={this.state.selectedOtherStatistics}
+              onChange={this._onOtherChanged}
+              options={extraStatistics}
             />
             <div className="sociallinks">
               <a className="icon-link" target="_blank" href="https://github.com/coens97/funda-pricemap">
