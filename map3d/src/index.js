@@ -21,13 +21,13 @@ class Root extends Component {
       viewport: {
         ...DeckGLOverlay.defaultViewport,
         width: 500,
-        height: 500
+        height: 500,
       },
       data: null,
       statistics: null
     };
 
-    Promise.all([fetch(DATA_URL), fetch('generated/2018-10-24.json')])
+    Promise.all([fetch(DATA_URL), fetch('generated/2018-10-25.slaap.4.json')])
       .then(response =>
         Promise.all(response.map(x => x.json()))
       )
@@ -70,6 +70,7 @@ class Root extends Component {
         <ToastContainer />
         <MapGL
           {...viewport}
+          mapStyle='mapbox://styles/mapbox/streets-v10'
           onViewportChange={this._onViewportChange.bind(this)}
           mapboxApiAccessToken={MAPBOX_TOKEN}>
           <DeckGLOverlay viewport={viewport}
