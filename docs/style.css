@@ -84,6 +84,7 @@ body {
 .bm-item-list {
   color: #b8b7ad;
   padding: 0.8em;
+  height: auto !important;
 }
 
 /* Individual item */
@@ -106,4 +107,18 @@ body {
   position: absolute;
   bottom: 30px;
   left: 0;
+}
+
+.header {
+  color: #ffffff;
+  margin: 0;
+}
+
+.select-header {
+  color: #ffffff;
+  margin-bottom: 0;
+}
+
+.menu-select{
+  width: 100%;
 }

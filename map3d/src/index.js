@@ -11,6 +11,7 @@ import { slide as Menu } from 'react-burger-menu'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
+import Select from 'react-select';
 
 library.add(fab);
 
@@ -36,26 +37,50 @@ class Root extends Component {
       overview: null,
       loading: true,
       overviewLoaded: false,
+      selectedDate: null
     };
 
-    Promise.all([fetch(DATA_URL), fetch('generated/2018-10-25.slaap.4.json'), fetch(OVERVIEW_URL)])
+    Promise.all([fetch(DATA_URL), fetch(OVERVIEW_URL)])
       .then(response =>
         Promise.all(response.map(x => x.json()))
       )
       .then(jsonData => {
+        const datesList = jsonData[1]
+          .dates
+          .reverse()
+          .map(x => ({ value: x, label: x }));
+        const loadingDate = datesList[0];
         this.setState(
           {
             data: jsonData[0],
-            statistics: jsonData[1],
-            overview: jsonData[2],
-            loading: false,
-            overviewLoaded: true
+            overview: datesList,
+            overviewLoaded: true,
+            selectedDate: loadingDate
           });
+
+        this.loadStatisticsFile(loadingDate.value);
       }).catch(ex => {
         console.warn(ex);
         toast.error("Could not load the map data");
       });
 
+  }
+
+  loadStatisticsFile(filename) {
+    fetch(`generated/${filename}.json`)
+      .then(response =>
+        response.json()
+      )
+      .then(jsonData => {
+        this.setState(
+          {
+            statistics: jsonData,
+            loading: false,
+          });
+      }).catch(ex => {
+        console.warn(ex);
+        toast.error("Could not load the statistics data");
+      });
   }
 
   componentDidMount() {
@@ -75,6 +100,15 @@ class Root extends Component {
       viewport: { ...this.state.viewport, ...viewport }
     });
   }
+
+  _onDateChanged = (newDate) => {
+    this.setState(
+      {
+        selectedDate: newDate
+      });
+
+    this.loadStatisticsFile(newDate.value);
+  };
 
   render() {
     const { viewport, data, statistics } = this.state;
@@ -101,8 +135,15 @@ class Root extends Component {
           // Render menu-bar if overview is loaded
           this.state.overviewLoaded &&
           <Menu>
-
-
+            <h1 className="header">Price per &#13217;</h1>
+            <hr></hr>
+            <h3 className="select-header">Date</h3>
+            <Select
+              className="menu-select"
+              value={this.state.selectedDate}
+              onChange={this._onDateChanged}
+              options={this.state.overview}
+            />
             <div className="sociallinks">
               <a className="icon-link" target="_blank" href="https://github.com/coens97/funda-pricemap">
                 <FontAwesomeIcon icon={['fab', 'github']} size="3x" />
