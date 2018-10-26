@@ -26,7 +26,7 @@ export default class DeckGLOverlay extends Component {
   render() {
     const { viewport, postmap, statistics } = this.props;
 
-    if (!postmap || !statistics) {
+    if (!postmap || !statistics || !(statistics.postcodes)) {
       return null;
     }
 

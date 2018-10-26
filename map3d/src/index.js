@@ -129,7 +129,12 @@ class Root extends Component {
       { value: ".slaap.3", label: "3 bedrooms" },
       { value: ".slaap.4", label: "4 bedrooms" },
       { value: ".slaap.5", label: "5 bedrooms" },
-      { value: ".slaap.6", label: "6 bedrooms" }
+      { value: ".slaap.6", label: "6 bedrooms" },
+      { value: ".year.0", label: " 0 - 5 years old" },
+      { value: ".year.5", label: " 5 - 10 years old" },
+      { value: ".year.10", label: "10 - 20 years old" },
+      { value: ".year.20", label: "20 - 40 years old" },
+      { value: ".year.40", label: ">40 years old" }
     ];
     // Css style of loader
     return (

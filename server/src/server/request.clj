@@ -146,7 +146,7 @@
                                         (catch Exception e nil))
                   status (get-value-by-label "Status" overdrachtlist)
                   bouwlist (get-list-by-title "Bouw" housedatalist)
-                  bouwjaar (get-value-by-label "Bouwjaar" bouwlist)
+                  bouwjaar (parse-int (get-value-by-label "Bouwjaar" bouwlist))
                   typehuis (get-value-by-label "Soort woonhuis" bouwlist)
                   bouwvorm (get-value-by-label "Bouwvorm" bouwlist)
                   opervlaklist (get-list-by-title "Oppervlakten en inhoud" housedatalist)
@@ -168,6 +168,7 @@
                    (some? aantalkamers)
                    (some? woonoppervlakte)
                    (some? aantalslaapkamers)
+                   (some? bouwjaar)
                    (= status "Beschikbaar")
                    (= bouwvorm "Bestaande bouw"))
                 {:vraagprijs parsedvraagprijs
@@ -175,6 +176,7 @@
                  :woonoppervlakte woonoppervlakte
                  :perceeloppervlakte perceeloppervlakte
                  :aantalkamers aantalkamersparsed
+                 :bouwjaar bouwjaar
                  :aantalslaapkamers aantalslaapkamersparsed
                  :postcode postcodeparsed}))
             (catch Exception e

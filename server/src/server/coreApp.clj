@@ -138,25 +138,34 @@
                     (f/cache))]
           ;; Write all results to file
         (println "Process all results")
-        (println result)
         (results-to-file
          result
          filename)
 
         (println "Process slaapkamers")
-        (println result)
         (doseq [aantalSlaapkamers (range 1 7)]
               (results-to-file
                (f/filter
                 result
                 (f/fn [house] (= (:aantalslaapkamers house) aantalSlaapkamers)))
               (str filename ".slaap." aantalSlaapkamers)))
+        
+        (println "Process buildyear")
+        (def currentYear (Integer/parseInt (.format (java.text.SimpleDateFormat. "yyyy") (new java.util.Date))))
+        (doseq [[startYear endYear] [[0 5][5 10][10 20][20 40][40 400]]]
+              (results-to-file
+               (f/filter
+                result
+                (f/fn [house] (and 
+                  (< (:bouwjaar house) (inc (- currentYear startYear)))
+                  (> (:bouwjaar house) (- currentYear endYear)))))
+              (str filename ".year." startYear)))
+
           ;; Add to list of generated files
         (register-file date)
           ;; Add file to git version system
         (git-cmd "commit" "-am" (str "Generated " date))
-        (git-cmd "push")
-)
+        (git-cmd "push"))
       (println "Already processed today"))))
 
 (defn -main
