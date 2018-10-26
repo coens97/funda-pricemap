@@ -11,6 +11,8 @@
                  [danlentz/clj-uuid "0.1.7"]]
   :main server.coreApp
   ;; include storm dependency only in dev because production storm cluster provides it
-  :profiles {:dev
+  :profiles {:uberjar {:aot :all
+                       :dependencies [[org.apache.spark/spark-core_2.11 "2.2.0"]]}
+             :dev
              {:aot [flambo.function flambo.api server.coreApp]
               :dependencies [[org.apache.spark/spark-core_2.11 "2.2.0"]]}})

@@ -173,7 +173,9 @@
   []
   (def c (-> (conf/spark-conf)
              (conf/master "local[*]")
-             (conf/app-name "funda-crawler")))
+             (conf/app-name "funda-crawler")
+             (conf/set "spark.executor.memory" "512m")
+             (conf/set "spark.driver.memory" "128m")))
 
   (def sc (f/spark-context c))
 
