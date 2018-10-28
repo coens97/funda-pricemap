@@ -106,6 +106,7 @@ export default class DeckGLOverlay extends Component {
         {this.state.showStats &&
           <div className="postalDetails">
             <h2>{this.state.stats.properties.POSTCODE}, {this.state.stats.properties.GM_NAAM}</h2>
+            <h3>{Math.round(this.state.stats.statistics.r)} &#8364;/&#x33A1;</h3>
             <span>Men/Woman</span>
             <Chart width={240} height={20} series={([{ data: [this.state.stats.properties.AANT_MAN] }, { data: [this.state.stats.properties.AANT_VROUW] }])}>
               <Transform method={['stack', 'rotate']}>

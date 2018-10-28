@@ -125,7 +125,7 @@ body {
 
 .postalDetails {
   width:240px;
-  height:160px;
+  height:190px;
   position: absolute;
   right: 0;
   bottom: 0;
@@ -137,5 +137,8 @@ body {
 }
 
 .postalDetails h2 {
+  margin: 0;
+}
+.postalDetails h3 {
   margin: 0 0 4px 0;
 }
