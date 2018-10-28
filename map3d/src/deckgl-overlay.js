@@ -1,6 +1,17 @@
 import React, { Component } from 'react';
 import DeckGL, { GeoJsonLayer } from 'deck.gl';
 
+const {
+  // main component
+  Chart,
+  // graphs
+  Bars, Cloud, Dots, Labels, Lines, Pies, RadialLines, Ticks, Title,
+  // wrappers
+  Layer, Animate, Transform, Handlers,
+  // helpers
+  DropShadow, Gradient, helpers
+} = require('rumble-charts');
+
 const LIGHT_SETTINGS = {
   lightsPosition: [-125, 50.5, 5000, -122.8, 48.5, 8000],
   ambientRatio: 0.2,
@@ -11,6 +22,14 @@ const LIGHT_SETTINGS = {
 };
 
 export default class DeckGLOverlay extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      showStats: false,
+      stats: null
+    };
+  }
 
   static get defaultViewport() {
     return {
@@ -66,12 +85,46 @@ export default class DeckGLOverlay extends Component {
       getFillColor: f => colorScale(calcDepth(f, 0, 1)),
       getLineColor: f => [255, 255, 255],
       lightSettings: LIGHT_SETTINGS,
-      pickable: Boolean(this.props.onHover),
-      onHover: this.props.onHover
+      pickable: true,
+      onClick: f => {
+        console.warn(f);
+        const postcode = f.object.properties.POSTCODE;
+        const statistics = postcode in this.props.statistics.postcodes ? this.props.statistics.postcodes[postcode] : null;
+        this.setState({
+          showStats: true,
+          stats: {
+            properties: f.object.properties,
+            statistics: statistics
+          }
+        })
+      }
     });
 
     return (
-      <DeckGL {...viewport} layers={[layer]} initWebGLParameters />
+      <div>
+        <DeckGL {...viewport} layers={[layer]} initWebGLParameters />
+        {this.state.showStats &&
+          <div className="postalDetails">
+            <h2>{this.state.stats.properties.POSTCODE}, {this.state.stats.properties.GM_NAAM}</h2>
+            <span>Men/Woman</span>
+            <Chart width={240} height={20} series={([{ data: [this.state.stats.properties.AANT_MAN] }, { data: [this.state.stats.properties.AANT_VROUW] }])}>
+              <Transform method={['stack', 'rotate']}>
+                <Bars combined={true} innerPadding='2%' />
+              </Transform>
+            </Chart>
+            <span>0-14, 15-24, 25-44, 45-64, 65+</span>
+            <Chart width={240} height={20} series={([
+              { data: [this.state.stats.properties.P_00_14_JR] },
+              { data: [this.state.stats.properties.P_15_24_JR] },
+              { data: [this.state.stats.properties.P_25_44_JR] },
+              { data: [this.state.stats.properties.P_45_64_JR] },
+              { data: [this.state.stats.properties.P_65_EO_JR] }])}>
+              <Transform method={['stack', 'rotate']}>
+                <Bars combined={true} innerPadding='2%' />
+              </Transform>
+            </Chart>
+          </div>}
+      </div>
     );
   }
 }

@@ -122,3 +122,20 @@ body {
 .menu-select{
   width: 100%;
 }
+
+.postalDetails {
+  width:240px;
+  height:160px;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background-color: #ffffff;
+  padding: 10px;
+  border-top-left-radius: 10px;
+  border-top: 1px solid #dddddd;
+  border-left: 1px solid #dddddd;
+}
+
+.postalDetails h2 {
+  margin: 0 0 4px 0;
+}

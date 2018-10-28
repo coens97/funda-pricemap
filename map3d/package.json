@@ -16,7 +16,8 @@
     "react-map-gl": "3.3.7",
     "react-select": "^2.1.1",
     "react-spinners": "^0.4.7",
-    "react-toastify": "^4.4.0"
+    "react-toastify": "^4.4.0",
+    "rumble-charts": "^2.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
